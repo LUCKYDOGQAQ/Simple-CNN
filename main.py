@@ -37,14 +37,13 @@ class Cifar10Task:
         self.device = device
 
     def train(self):
-        # 模型转成训练模式
-        self.model.train()
+
         # 定义损失函数和优化器
         criterion = nn.CrossEntropyLoss()  # 交叉熵损失
         optimizer = optim.Adam(model.parameters(), lr=0.001)  # Adam优化器
 
         # 训练配置
-        num_epochs = 5
+        num_epochs = self.args.train_epochs
         train_losses = []
         train_accuracies = []
         val_losses = []
@@ -53,6 +52,8 @@ class Cifar10Task:
         for epoch in range(num_epochs):  # loop over the dataset multiple times
             running_loss = 0
             for i, data in enumerate(self.train_loader, 0):
+                # 模型转成训练模式
+                self.model.train()
                 # 获取inputs和labels
                 inputs, labels = data
 
@@ -100,13 +101,11 @@ class Cifar10Task:
         plt.figure(figsize=(8, 4))  # 创建一个宽度为8英寸，高度为4英寸的新图形
         plt.plot(range(num_epochs), train_losses, label='Training Loss')
         plt.plot(range(num_epochs), val_losses, label='Validating Loss')
-
         # # 添加坐标标签
         # for i, (xi, yi) in enumerate(zip(range(num_epochs), train_losses)):
         #     plt.annotate(f'({xi}, {yi})', (xi, yi), textcoords="offset points", xytext=(0, 10), ha='center')
         # for i, (xi, yi) in enumerate(zip(range(num_epochs), val_losses)):
         #     plt.annotate(f'({xi}, {yi})', (xi, yi), textcoords="offset points", xytext=(0, 10), ha='center')
-
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
         plt.legend()
@@ -117,7 +116,6 @@ class Cifar10Task:
         plt.figure(figsize=(8, 4))  # 创建一个宽度为8英寸，高度为4英寸的新图形
         plt.plot(range(num_epochs), train_accuracies, label='Training Accuracy')
         plt.plot(range(num_epochs), val_accuracies, label='Validating Accuracy')
-
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
         plt.legend()
@@ -142,19 +140,8 @@ class Cifar10Task:
         #     print(f"Weights: {param.data}")
 
         self.model.eval()  # 设置模型为评估模式
-        correct = 0
-        total = 0
-        with torch.no_grad():
-            for batch in self.test_loader:
-                images, labels = batch
-                outputs = self.model(images)
-                _, predicted = torch.max(outputs.data, 1)
-                total += labels.size(0)
-                # 统计正确预测的数量
-                correct += (predicted == labels).sum().item()
-
-        accuracy = 100 * correct / total
-        print('Accuracy on the test set: {:.2f}%'.format(accuracy))
+        accuracy = self.compute_accuracy(self.test_loader) * 100
+        print(f'Accuracy on the test set: {accuracy}%')
 
     def validate(self):
         self.model.eval()  # 设置模型为评估模式
@@ -189,7 +176,7 @@ class Cifar10Task:
         total = 0
         with torch.no_grad():
             for inputs, labels in dataloader:
-                outputs = model(inputs)
+                outputs = self.model(inputs)
                 _, predicted = torch.max(outputs, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
@@ -202,7 +189,7 @@ if __name__ == '__main__':
     # 定义任务所需的args，train_loader, test_loader, model, device
     args = config.Args().get_parser()
 
-    model = Net()
+    model = CNN()
 
     device = torch.device("cuda")
 

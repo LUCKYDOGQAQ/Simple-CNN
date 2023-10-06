@@ -21,7 +21,7 @@ class Args:
         parser.add_argument('--seed', type=int, default=123, help='random seed')
 
         # train args
-        parser.add_argument('--train_epochs', default=15, type=int,
+        parser.add_argument('--train_epochs', default=5, type=int,
                             help='Max training epoch')
         parser.add_argument('--dropout_prob', default=0.1, type=float,
                             help='drop out probability')
